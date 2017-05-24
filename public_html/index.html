@@ -1,0 +1,1407 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html>
+    <head>
+        <title>TODO supply a title</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <style>
+            .margin_top{
+                margin-top: 5px;
+            }
+        </style>
+        <link rel="stylesheet" type="text/css" href="assests/bootstrap-3.3.7-dist/css/bootstrap.min.css">
+    </head>
+    <body>
+        <div style="height: 50px; background-color: #5cb85c;">
+            <button type="button" class="btn btn-primary btn-lg" onclick="filter()" style="margin-left: 5px; margin-top: 2px">chọn hình</button>
+            <button type="button" onclick="saveImage(this)" class="btn btn-primary btn-lg pull-right" style="margin-right: 5px; margin-top: 2px"><span class="glyphicon glyphicon-save"></span> lưu hình</button>
+            <a id="download">Download image</a>
+        </div>
+        <form style="margin-top: 5px">
+            <div class="col-xs-9" style="text-align: center;">
+                <canvas id="mycanvas1" width="150" height="130"></canvas>
+            </div>
+
+
+
+            <div class="col-xs-3">
+                <div class="panel panel-primary">
+                    <div class="panel panel-heading">Basic</div>
+                    <div class="panel-body">
+                        <div class="row">
+                            <div class="col-xs-3">Contrast</div>
+                            <div  class="col-lg-7" ><input type="range" id="range_contrast" min="-100" max="100" oninput="outputContrast(value)" value="0"></div>
+                            <span class="col-xs-1" id="result_contrast">0</span>
+                        </div>
+                        <div class="row margin_top">
+                            <div class="col-xs-3">exposure</div>
+                            <div  class="col-lg-7" ><input type="range" id="range_exposure" min="-100" max="100" oninput="outputExposure(value)" value="0"></div>
+                            <span class="col-xs-1" id="result_exposure">0</span>
+                        </div>
+                        <div class="row margin_top">
+                            <div class="col-xs-3">vibrance</div>
+                            <div  class="col-lg-7" ><input type="range" id="range_vibrance"></div>
+                            <span class="col-xs-1" id="result_vibrance">0</span>
+                        </div>
+                        <div class="row margin_top">
+                            <div class="col-xs-3">Saturation</div>
+                            <div  class="col-lg-7" ><input type="range" id="range_saturation"></div>
+                            <span class="col-xs-1" id="result_saturation">0</span>
+                        </div>
+                        <div class="row margin_top">
+                            <div class="col-xs-3">brightness</div>
+                            <div  class="col-lg-7" ><input type="range" id="range_brightness"></div>
+                            <span class="col-xs-1" id="result_brightness">0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel panel-primary">
+                    <div class="panel panel-heading">Color</div>
+                    <div class="panel-body">
+                        <div class="row">
+                            <div class="col-xs-3">Red</div>
+                            <div  class="col-lg-7" ><input type="range" id="range_red"></div>
+                            <span class="col-xs-1" id="result_red">0</span>
+                        </div>
+                        <div class="row margin_top">
+                            <div class="col-xs-3">Blue</div>
+                            <div  class="col-lg-7" ><input type="range" id="range_blue"></div>
+                            <span class="col-xs-1" id="result_blue">0</span>
+                        </div>
+                        <div class="row margin_top">
+                            <div class="col-xs-3">Green</div>
+                            <div  class="col-lg-7" ><input type="range" id="range_green"></div>
+                            <span class="col-xs-1" id="result_green">0</span>
+                        </div>
+                        <div class="row margin_top">
+                            <div class="col-xs-3">Hue</div>
+                            <div  class="col-lg-7" ><input type="range" id="range_hue"></div>
+                            <span class="col-xs-1" id="result_hue">0</span>
+                        </div>
+
+                    </div>
+                </div>
+
+                <div class="panel panel-primary">
+                    <div class="panel panel-heading">Detail</div>
+                    <div class="panel-body">
+                        <div class="row">
+                            <div class="col-xs-3">noise</div>
+                            <div  class="col-lg-7" ><input type="range" id="range_noise"></div>
+                            <span class="col-xs-1" id="result_noise">0</span>
+                        </div>
+                        <div class="row margin_top">
+                            <div class="col-xs-3">Sharpen</div>
+                            <div  class="col-lg-7" ><input type="range" id="range_sharpen"></div>
+                            <span class="col-xs-1" id="result_sharpen">0</span>
+                        </div>
+
+
+                    </div>
+                </div>
+            </div>
+        </form>
+
+
+
+        <script type="text/javascript" src="assests/jquery-3.1.1.min.js"></script>
+        <script type="text/javascript" src="assests/bootstrap-3.3.7-dist/js/bootstrap.min.js"></script>
+        <script type="text/javascript">
+                var canvas = document.getElementById('mycanvas1');
+                var context = canvas.getContext('2d');
+                var image = new Image();
+                image.src = 'normal.jpg';
+                window.onload = function ()
+                {
+                    setImage();
+                }
+                function setImage()
+                {
+                    var hRatio = canvas.width / image.width;
+                    var vRatio = canvas.height / image.height;
+                    var ratio;
+                    if (hRatio < vRatio)
+                        ratio = hRatio;
+                    else
+                        ratio = vRatio;
+                    var centerShift_x = (canvas.width - image.width * ratio) / 2;
+                    var centerShift_y = (canvas.height - image.height * ratio) / 2;
+                    context.drawImage(image, 0, 0, image.width, image.height,
+                            centerShift_x, centerShift_y, image.width * ratio, image.height * ratio);
+                }
+
+                function outputContrast(vol)
+                {
+                    document.getElementById('result_contrast').innerHTML = vol;
+                    channelRed(0, 70, 0);
+                }
+                function outputExposure(vol)
+                {
+                    document.getElementById('result_exposure').innerHTML = vol;
+                    brightness(vol);
+
+                }
+
+                function contrast(adjust)
+                {
+                    var data = context.getImageData(0, 0, canvas.width, canvas.height);//get pixel data
+                    var pixels = data.data;
+                    adjust = Math.pow((adjust + 100) / 100, 2);
+                    for (var i = 0, len = pixels.length; i < len; i += 4) {
+                        var r = pixels[i];
+                        var g = pixels[i + 1];
+                        var b = pixels[i + 2];
+
+                        r /= 255;
+                        r -= 0.5;
+                        r *= adjust;
+                        r += 0.5;
+                        r *= 255;
+
+                        g /= 255;
+                        g -= 0.5;
+                        g *= adjust;
+                        g += 0.5;
+                        g *= 255;
+
+
+                        b /= 255;
+                        b -= 0.5;
+                        b *= adjust;
+                        b += 0.5;
+                        b *= 255;
+
+                        pixels[i] = r;
+                        pixels[i + 1] = g;
+                        pixels[i + 2] = b;
+                    }
+                    data.data = pixels;
+                    context.putImageData(data, 0, 0);//put the image data back
+                }
+                function brightness(amount) {
+                    var data = context.getImageData(0, 0, canvas.width, canvas.height);//get pixel data
+                    var pixels = data.data;
+                    amount = Math.floor(255 * (amount / 100));
+                    for (var i = 0; i < pixels.length; i += 4) {//loop through all data
+                        /*
+                         pixels[i] is the red component
+                         pixels[i+1] is the green component
+                         pixels[i+2] is the blue component
+                         pixels[i+3] is the alpha component
+                         */
+                        pixels[i] += amount;
+                        pixels[i + 1] += amount;
+                        pixels[i + 2] += amount;
+                    }
+                    data.data = pixels;
+                    context.putImageData(data, 0, 0);//put the image data back
+                }
+
+                function saturation(amount)
+                {
+                    var data = context.getImageData(0, 0, canvas.width, canvas.height);//get pixel data
+                    var d = data.data,
+                            max, adjust = -amount * 0.01;
+                    for (var i = 0; i < d.length; i += 4) {
+                        max = Math.max(d[i], d[i + 1], d[i + 2]);
+                        d[i] += max !== d[i] ? (max - d[i]) * adjust : 0;
+                        d[i + 1] += max !== d[i + 1] ? (max - d[i + 1]) * adjust : 0;
+                        d[i + 2] += max !== d[i + 2] ? (max - d[i + 2]) * adjust : 0;
+                    }
+                    data.data = d;
+                    context.putImageData(data, 0, 0);//put the image data back
+                }
+
+                function noise(adjust)
+                {
+                    adjust = Math.abs(adjust) * 2.55
+                    var data = context.getImageData(0, 0, canvas.width, canvas.height);//get pixel data
+                    var pixels = data.data;
+                    for (var i = 0; i < pixels.length; i += 4)
+                    {
+                        /*pixels[i] = pixels[i]*amount*0.4;
+                         pixels[i + 1] = pixels[i + 1]*amount*0.4;
+                         pixels[i + 2] = pixels[i + 2]*amount*0.4;*/
+
+                        //var rand = (0.5 - Math.random()) * amount;
+                        var rand = adjust * -1 + (Math.random() * (adjust - adjust * -1));
+                        // assigning random colors to our data
+                        pixels[i] = pixels[i] + rand; // green
+                        pixels[i + 1] = pixels[i + 1] + rand; // green
+                        pixels[i + 2] = pixels[i + 2] + rand; // blue
+                    }
+                    data.data = pixels;
+                    context.putImageData(data, 0, 0);//put the image data back
+                }
+
+
+
+                function sharpe(mix)
+                {
+                    mix *= 0.01;
+                    var w = canvas.width;
+                    var h = canvas.height;
+                    var weights = [0, -mix, 0, -mix, 4 * mix + 1, -mix, 0, -mix, 0],
+                            katet = Math.round(Math.sqrt(weights.length)),
+                            half = (katet * 0.5) | 0,
+                            dstData = context.createImageData(w, h),
+                            dstBuff = dstData.data,
+                            srcBuff = context.getImageData(0, 0, w, h).data,
+                            y = h;
+
+                    while (y--) {
+
+                        var x = w;
+
+                        while (x--) {
+
+                            var sy = y,
+                                    sx = x,
+                                    dstOff = (y * w + x) * 4,
+                                    r = 0,
+                                    g = 0,
+                                    b = 0,
+                                    a = 0;
+
+                            for (var cy = 0; cy < katet; cy++) {
+                                for (var cx = 0; cx < katet; cx++) {
+
+                                    var scy = sy + cy - half;
+                                    var scx = sx + cx - half;
+
+                                    if (scy >= 0 && scy < h && scx >= 0 && scx < w) {
+
+                                        var srcOff = (scy * w + scx) * 4;
+                                        var wt = weights[cy * katet + cx];
+
+                                        r += srcBuff[srcOff] * wt;
+                                        g += srcBuff[srcOff + 1] * wt;
+                                        b += srcBuff[srcOff + 2] * wt;
+                                        a += srcBuff[srcOff + 3] * wt;
+                                    }
+                                }
+                            }
+
+                            dstBuff[dstOff] = r * mix + srcBuff[dstOff] * (1 - mix);
+                            dstBuff[dstOff + 1] = g * mix + srcBuff[dstOff + 1] * (1 - mix);
+                            dstBuff[dstOff + 2] = b * mix + srcBuff[dstOff + 2] * (1 - mix)
+                            dstBuff[dstOff + 3] = srcBuff[dstOff + 3];
+                        }
+                    }
+
+                    context.putImageData(dstData, 0, 0);
+                }
+
+                function recolorPants(colorshift) {
+                    colorshift = -colorshift * 0.01;
+                    var imgData = context.getImageData(0, 0, canvas.width, canvas.height);
+                    var data = imgData.data;
+
+                    for (var i = 0; i < data.length; i += 4) {
+                        var red = data[i + 0];
+                        var green = data[i + 1];
+                        var blue = data[i + 2];
+                        var alpha = data[i + 3];
+
+                        // skip transparent/semiTransparent pixels
+                        if (alpha < 200) {
+                            continue;
+                        }
+
+                        var hsl = rgbToHsl(red, green, blue);
+                        var hue = hsl.h * 360;
+
+                        // change blueish pixels to the new color
+                        if (hue > 200 && hue < 300) {
+                            var newRgb = hslToRgb(hsl.h + colorshift, hsl.s, hsl.l);
+                            data[i + 0] = newRgb.r;
+                            data[i + 1] = newRgb.g;
+                            data[i + 2] = newRgb.b;
+                            data[i + 3] = 255;
+                        }
+                    }
+                    context.putImageData(imgData, 0, 0);
+                }
+
+                function hue(amount)
+                {
+                    var imgData = context.getImageData(0, 0, canvas.width, canvas.height);
+                    var data = imgData.data;
+                    for (var i = 0; i < data.length; i += 4)
+                    {
+                        //alert(i);
+                        var red = data[i];
+                        var green = data[i + 1];
+                        var blue = data[i + 2];
+                        var alpha = data[i + 3];
+                        var hsv = rgbToHSV(red, green, blue);
+
+                        //alert(hsv.h + ", " + hsv.s + ", " + hsv.v);
+                        var hue = hsv.h * 100;
+                        hue = Math.abs(amount);
+                        hue = hue % 100;
+                        hue /= 100;
+                        hsv.h = hue;
+
+                        var rgb = hsvToRGB(hsv.h, hsv.s, hsv.v);
+                        //alert("hsv to rgb: " + hsv.h + ", " + hsv.s + ", " + hsv.v);
+                        data[i + 0] = rgb.r;
+                        data[i + 1] = rgb.g;
+                        data[i + 2] = rgb.b;
+                    }
+                    imgData.data = data;
+                    context.putImageData(imgData, 0, 0);
+
+                }
+
+                function rgbToHSL(r, g, b)
+                {
+                    r /= 255
+                    g /= 255
+                    b /= 255
+
+                    var max = Math.max(r, g, b);
+                    var min = Math.min(r, g, b);
+                    var l = (max + min) / 2;
+
+                    var h, s, d;
+                    if (max == min)
+                        var h = s = 0;
+                    else
+                    {
+                        d = max - min;
+                        if (l > 0.5)
+                        {
+                            s = d / (2 - max - min);
+                        } else
+                        {
+                            s = d / (max + min);
+                        }
+                        switch (max)
+                        {
+                            case r:
+                            {
+                                if (g < b)
+                                    h = (g - b) / d + 6;
+                                else
+                                    h = (g - b) / d + 0;
+                                break;
+                            }
+                            case g:
+                            {
+                                h = (b - r) / d + 2;
+                                break;
+                            }
+                            case b:
+                            {
+                                h = (r - g) / d + 4;
+                                break;
+                            }
+                        }
+                        h /= 6;
+                    }
+                    return {
+                        h: h,
+                        s: s,
+                        l: l
+                    };
+                }
+
+                function hsvToRGB(h, s, v)
+                {
+                    var i = Math.floor(h * 6);
+                    var f = h * 6 - 1;
+                    var p = v * (1 - s);
+                    var q = v * (1 - f * s);
+                    var t = v * (1 - (1 - f) * s);
+                    var g, r, b;
+                    switch (i % 6)
+                    {
+                        case 0:
+                        {
+                            r = v;
+                            g = t;
+                            b = q;
+                            break;
+                        }
+                        case 1:
+                        {
+                            r = q;
+                            g = v;
+                            b = p;
+                            break;
+                        }
+                        case 2:
+                        {
+                            r = p;
+                            g = v;
+                            b = t;
+                            break;
+                        }
+                        case 3:
+                        {
+                            r = p;
+                            g = q;
+                            b = v;
+                            break;
+                        }
+                        case 4:
+                        {
+                            r = t;
+                            g = p;
+                            b = v;
+                            break;
+                        }
+                        case 5:
+                        {
+                            r = v;
+                            g = p;
+                            b = q;
+                            break;
+                        }
+                    }
+                    return {
+                        r: Math.floor(r * 255),
+                        g: Math.floor(g * 255),
+                        b: Math.floor(b * 255)
+                    };
+                }
+
+                function rgbToHSV(r, g, b)
+                {
+                    r /= 255;
+                    g /= 255;
+                    b /= 255;
+                    var max = Math.max(r, g, b);
+                    var min = Math.min(r, g, b);
+                    var v = max;
+                    var d = max - min;
+                    var s, h;
+
+                    if (max == 0)
+                        s = 0;
+                    else
+                        s = d / max;
+                    if (max == min)
+                    {
+                        h = 0;
+                    } else
+                    {
+                        switch (max)
+                        {
+                            case r:
+                            {
+                                if (g < b)
+                                    h = (g - b) / d + 6;
+                                else
+                                    h = (g - b) / d + 0;
+                                break;
+                            }
+                            case g:
+                            {
+                                h = (b - r) / d + 2;
+                                break;
+                            }
+                            case b:
+                            {
+                                h = (r - g) / d + 4;
+                                break;
+                            }
+                        }
+                        h /= 6;
+                    }
+                    //alert(h  +", " + s + ", " + v);
+                    return {
+                        h: h,
+                        s: s,
+                        v: v
+                    };
+                }
+
+
+                function vibrance(amount)
+                {
+                    amount *= -1;
+                    var data = context.getImageData(0, 0, canvas.width, canvas.height);//get pixel data
+                    var pixels = data.data;
+                    for (var i = 0; i < pixels.length; i += 4)
+                    {
+                        var max = Math.max(pixels[i], pixels[i + 1], pixels[i + 2]);
+                        var avg = (pixels[i] + pixels[i + 1] + pixels[i + 2]) / 3;
+                        var amt = ((Math.abs(max - avg) * 2 / 255) * amount) / 100;
+
+                        if (max != pixels[i])
+                        {
+                            pixels[i] += (max - pixels[i]) * amt;
+                        }
+                        if (max != pixels[i + 1])
+                        {
+                            pixels[i + 1] += (max - pixels[i + 1]) * amt;
+                        }
+                        if (max != pixels[i + 2])
+                        {
+                            pixels[i + 2] += (max - pixels[i + 2]) * amt;
+                        }
+                    }
+                    data.data = pixels;
+                    context.putImageData(data, 0, 0);//put the image data back
+                }
+
+
+
+                function sepia(adjust)
+                {
+                    adjust /= 100;
+                    var data = context.getImageData(0, 0, canvas.width, canvas.height);//get pixel data
+                    var pixels = data.data;
+                    for (var i = 0; i < pixels.length; i += 4)
+                    {
+                        var r = pixels[i];
+                        var g = pixels[i + 1];
+                        var b = pixels[i + 2];
+
+                        r = Math.min(255, (r * (1 - (0.607 * adjust))) + (g * (0.769 * adjust)) + (b * (0.189 * adjust)));
+                        g = Math.min(255, (r * (0.349 * adjust)) + (g * (1 - (0.314 * adjust))) + (b * (0.168 * adjust)));
+                        b = Math.min(255, (r * (0.272 * adjust)) + (g * (0.534 * adjust)) + (b * (1 - (0.869 * adjust))));
+
+                        pixels[i] = r;
+                        pixels[i + 1] = g;
+                        pixels[i + 2] = b;
+                    }
+                    data.data = pixels;
+                    context.putImageData(data, 0, 0);//put the image data back
+                }
+
+                function gamma(adjust)
+                {
+                    var data = context.getImageData(0, 0, canvas.width, canvas.height);//get pixel data
+                    var pixels = data.data;
+                    for (var i = 0; i < pixels.length; i += 4)
+                    {
+                        var r = pixels[i];
+                        var g = pixels[i + 1];
+                        var b = pixels[i + 2];
+
+                        r = Math.pow(r / 255, adjust) * 255;
+                        g = Math.pow(g / 255, adjust) * 255;
+                        b = Math.pow(b / 255, adjust) * 255;
+
+                        pixels[i] = r;
+                        pixels[i + 1] = g;
+                        pixels[i + 2] = b;
+                    }
+                    data.data = pixels;
+                    context.putImageData(data, 0, 0);
+                }
+
+                function greysCale()
+                {
+                    var data = context.getImageData(0, 0, canvas.width, canvas.height);//get pixel data
+                    var pixels = data.data;
+                    for (var i = 0; i < pixels.length; i += 4)
+                    {
+                        var r = pixels[i];
+                        var g = pixels[i + 1];
+                        var b = pixels[i + 2];
+
+                        var avg = (0.299 * r) + (0.587 * g) + (0.114 * b)
+
+
+
+                        pixels[i] = avg;
+                        pixels[i + 1] = avg;
+                        pixels[i + 2] = avg;
+                    }
+                    data.data = pixels;
+                    context.putImageData(data, 0, 0);
+                }
+
+
+                function channels(r, g, b)
+                {
+                    if(r != null)
+                        r /= 100;
+                    if(g != null)
+                        g /= 100;
+                    if(b != null)
+                        b /= 100;
+                    var data = context.getImageData(0, 0, canvas.width, canvas.height);//get pixel data
+                    var pixels = data.data;
+                    for (var i = 0; i < pixels.length; i += 4)
+                    {
+                        if(r != null)
+                        {
+                            if (r > 0)
+                                pixels[i] += (255 - pixels[i]) * r;
+                            else
+                                pixels[i] -= pixels[i] * Math.abs(r);
+                        }
+                        
+                         if(g!=null){
+                             if (g > 0)
+                                pixels[i + 1] += (255 - pixels[i + 1]) * g;
+                             else
+                                pixels[i + 1] -= pixels[i + 1] * Math.abs(g);
+                         }
+                        
+                         if(b!= null)
+                         {
+                            if (b > 0)
+                                pixels[i + 2] += (255 - pixels[i + 2]) * b;
+                            else
+                                pixels[i + 2] -= pixels[i + 2] * Math.abs(b);
+                         }
+                        
+                    }
+                    data.data = pixels;
+                    context.putImageData(data, 0, 0);
+                }
+
+               /* function sepia()
+                {
+                    var data = context.getImageData(0, 0, canvas.width, canvas.height);//get pixel data
+                    var pixels = data.data;
+                    for (var i = 0; i < pixels.length; i += 4)
+                    {
+                        var avg = 0.3 * pixels[i] + 0.59 * pixels[i + 1] + 0.11 * pixels[i + 2];
+                        pixels[i] = avg + 100;
+                        pixels[i + 1] = avg + 50;
+                        pixels[i + 2] = avg + 255;
+                    }
+                    data.data = pixels;
+                    context.putImageData(data, 0, 0);
+                }*/
+
+                
+
+
+                function blur()
+                {
+                    var weights = [1 / 9, 1 / 9, 1 / 9,
+                        1 / 9, 1 / 9, 1 / 9,
+                        1 / 9, 1 / 9, 1 / 9],
+                            pixels = context.getImageData(0, 0, canvas.width, canvas.height),
+                            side = Math.round(Math.sqrt(weights.length)),
+                            halfSide = Math.floor(side / 2),
+                            src = pixels.data,
+                            sw = pixels.width,
+                            sh = pixels.height,
+                            output = context.createImageData(sw, sh),
+                            dst = output.data,
+                            // go through the destination image pixels
+                            alphaFac = this.opaque ? 1 : 0,
+                            r, g, b, a, dstOff,
+                            scx, scy, srcOff, wt;
+                    for (var y = 0; y < sh; y++) {
+                        for (var x = 0; x < sw; x++) {
+                            dstOff = (y * sw + x) * 4;
+                            // calculate the weighed sum of the source image pixels that
+                            // fall under the convolution matrix
+                            r = 0;
+                            g = 0;
+                            b = 0;
+                            a = 0;
+                            for (var cy = 0; cy < side; cy++) {
+                                for (var cx = 0; cx < side; cx++) {
+                                    scy = y + cy - halfSide;
+                                    scx = x + cx - halfSide;
+                                    // eslint-disable-next-line max-depth
+                                    if (scy < 0 || scy > sh || scx < 0 || scx > sw) {
+                                        continue;
+                                    }
+                                    srcOff = (scy * sw + scx) * 4;
+                                    wt = weights[cy * side + cx];
+                                    r += src[srcOff] * wt;
+                                    g += src[srcOff + 1] * wt;
+                                    b += src[srcOff + 2] * wt;
+                                    a += src[srcOff + 3] * wt;
+                                }
+                            }
+                            dst[dstOff] = r;
+                            dst[dstOff + 1] = g;
+                            dst[dstOff + 2] = b;
+                            dst[dstOff + 3] = a + 0 * (255 - a);
+                        }
+                    }
+                    context.putImageData(output, 0, 0);
+                }
+
+
+                function threshold()
+                {
+                    var data = context.getImageData(0, 0, canvas.width, canvas.height);//get pixel data
+                    var pixels = data.data;
+                    for (var i = 0; i < pixels.length; i += 4)
+                    {
+                        var r = pixels[i];
+                        var g = pixels[i + 1];
+                        var b = pixels[i + 2];
+                        var v = (0.2126 * r + 0.7152 * g + 0.0722 * b >= 100) ? 255 : 0;
+                        pixels[i] = pixels[i + 1] = pixels[i + 2] = v;
+                    }
+                    data.data = pixels;
+                    context.putImageData(data, 0, 0);
+                }
+
+                function gaussianBlur(amount)
+                {
+                    amount /= 10;
+                    var width = canvas.width;
+                    var width4 = width << 2;
+                    var height = canvas.height;
+                    var pixels = context.getImageData(0, 0, canvas.width, canvas.height);
+                    if (pixels) {
+                        var data = pixels.data;
+
+                        // compute coefficients as a function of amount
+                        var q;
+                        if (amount < 0.0) {
+                            amount = 0.0;
+                        }
+                        if (amount >= 2.5) {
+                            q = 0.98711 * amount - 0.96330;
+                        } else if (amount >= 0.5) {
+                            q = 3.97156 - 4.14554 * Math.sqrt(1.0 - 0.26891 * amount);
+                        } else {
+                            q = 2 * amount * (3.97156 - 4.14554 * Math.sqrt(1.0 - 0.26891 * 0.5));
+                        }
+
+                        //compute b0, b1, b2, and b3
+                        var qq = q * q;
+                        var qqq = qq * q;
+                        var b0 = 1.57825 + (2.44413 * q) + (1.4281 * qq) + (0.422205 * qqq);
+                        var b1 = ((2.44413 * q) + (2.85619 * qq) + (1.26661 * qqq)) / b0;
+                        var b2 = (-((1.4281 * qq) + (1.26661 * qqq))) / b0;
+                        var b3 = (0.422205 * qqq) / b0;
+                        var bigB = 1.0 - (b1 + b2 + b3);
+
+                        // horizontal
+                        for (var c = 0; c < 3; c++) {
+                            for (var y = 0; y < height; y++) {
+                                // forward 
+                                var index = y * width4 + c;
+                                var indexLast = y * width4 + ((width - 1) << 2) + c;
+                                var pixel = data[index];
+                                var ppixel = pixel;
+                                var pppixel = ppixel;
+                                var ppppixel = pppixel;
+                                for (; index <= indexLast; index += 4) {
+                                    pixel = bigB * data[index] + b1 * ppixel + b2 * pppixel + b3 * ppppixel;
+                                    data[index] = pixel;
+                                    ppppixel = pppixel;
+                                    pppixel = ppixel;
+                                    ppixel = pixel;
+                                }
+                                // backward
+                                index = y * width4 + ((width - 1) << 2) + c;
+                                indexLast = y * width4 + c;
+                                pixel = data[index];
+                                ppixel = pixel;
+                                pppixel = ppixel;
+                                ppppixel = pppixel;
+                                for (; index >= indexLast; index -= 4) {
+                                    pixel = bigB * data[index] + b1 * ppixel + b2 * pppixel + b3 * ppppixel;
+                                    data[index] = pixel;
+                                    ppppixel = pppixel;
+                                    pppixel = ppixel;
+                                    ppixel = pixel;
+                                }
+                            }
+                        }
+
+                        // vertical
+                        for (var c = 0; c < 3; c++) {
+                            for (var x = 0; x < width; x++) {
+                                // forward 
+                                var index = (x << 2) + c;
+                                var indexLast = (height - 1) * width4 + (x << 2) + c;
+                                var pixel = data[index];
+                                var ppixel = pixel;
+                                var pppixel = ppixel;
+                                var ppppixel = pppixel;
+                                for (; index <= indexLast; index += width4) {
+                                    pixel = bigB * data[index] + b1 * ppixel + b2 * pppixel + b3 * ppppixel;
+                                    data[index] = pixel;
+                                    ppppixel = pppixel;
+                                    pppixel = ppixel;
+                                    ppixel = pixel;
+                                }
+                                // backward
+                                index = (height - 1) * width4 + (x << 2) + c;
+                                indexLast = (x << 2) + c;
+                                pixel = data[index];
+                                ppixel = pixel;
+                                pppixel = ppixel;
+                                ppppixel = pppixel;
+                                for (; index >= indexLast; index -= width4) {
+                                    pixel = bigB * data[index] + b1 * ppixel + b2 * pppixel + b3 * ppppixel;
+                                    data[index] = pixel;
+                                    ppppixel = pppixel;
+                                    pppixel = ppixel;
+                                    ppixel = pixel;
+                                }
+                            }
+                        }
+
+                    }
+                    pixels.data = data;
+                    context.putImageData(pixels, 0, 0);
+                }
+
+
+                function applyMatrix(matrix, amount)
+                {
+                    amount /= 100;
+                    var pixels = context.getImageData(0, 0, canvas.width, canvas.height);
+                    // create a second buffer to hold matrix results
+                    var buffer2 = document.createElement('canvas');
+                    // get the canvas context 
+                    var c2 = buffer2.getContext('2d');
+
+                    // set the dimensions
+                    c2.width = buffer2.width = canvas.width;
+                    c2.height = buffer2.height = canvas.height;
+
+                    // draw the image to the new buffer
+                    var hRatio = canvas.width / image.width;
+                    var vRatio = canvas.height / image.height;
+                    var ratio;
+                    if (hRatio < vRatio)
+                        ratio = hRatio;
+                    else
+                        ratio = vRatio;
+                    var centerShift_x = (canvas.width - image.width * ratio) / 2;
+                    var centerShift_y = (canvas.height - image.height * ratio) / 2;
+                    c2.drawImage(image, 0, 0, image.width, image.height,
+                            centerShift_x, centerShift_y, image.width * ratio, image.height * ratio);
+
+                    var bufferedPixels = c2.getImageData(0, 0, c2.width, c2.height)
+                    // speed up access
+                    var data = pixels.data, bufferedData = bufferedPixels.data, imgWidth = canvas.width;
+                    // make sure the matrix adds up to 1
+                    /* 		matrix = normalizeMatrix(matrix); */
+
+                    // calculate the size of the matrix
+                    var matrixSize = Math.sqrt(matrix.length);
+                    // also store the size of the kernel radius (half the size of the matrix)
+                    var kernelRadius = Math.floor(matrixSize / 2);
+                    // loop through every pixel
+                    for (var i = 1; i < imgWidth - 1; i++) {
+                        for (var j = 1; j < canvas.height - 1; j++) {
+                            // temporary holders for matrix results
+                            var sumR = 0;
+                            var sumG = 0;
+                            var sumB = 0;
+
+                            // loop through the matrix itself
+                            for (var h = 0; h < matrixSize; h++) {
+                                for (var w = 0; w < matrixSize; w++) {
+
+                                    // get a refence to a pixel position in the matrix
+                                    var r = convertCoordinates(i + w - kernelRadius, j + h - kernelRadius, imgWidth) << 2;
+                                    var currentPixel = {
+                                        r: bufferedData[r],
+                                        g: bufferedData[r + 1],
+                                        b: bufferedData[r + 2]
+                                    };
+
+                                    // apply the value from the current matrix position
+                                    sumR += currentPixel.r * matrix[w + h * matrixSize];
+                                    sumG += currentPixel.g * matrix[w + h * matrixSize];
+                                    sumB += currentPixel.b * matrix[w + h * matrixSize];
+                                }
+                            }
+
+                            // get a reference for the final pixel
+                            var ref = convertCoordinates(i, j, imgWidth) << 2;
+                            var thisPixel = {
+                                r: data[ref],
+                                g: data[ref + 1],
+                                b: data[ref + 2]
+                            };
+                            // finally, apply the adjusted values
+                            data = setRGB(data, ref,
+                                    findColorDifference(amount, sumR, thisPixel.r),
+                                    findColorDifference(amount, sumG, thisPixel.g),
+                                    findColorDifference(amount, sumB, thisPixel.b));
+
+                        }
+                    }
+                    pixels.data = data;
+                    context.putImageData(pixels, 0, 0);
+                }
+
+
+                function convertCoordinates(x, y, w) {
+                    return x + (y * w);
+                }
+                function findColorDifference(dif, dest, src) {
+                    return(dif * dest + (1 - dif) * src);
+                }
+
+                function setRGB(data, index, r, g, b) {
+                    data[index] = r;
+                    data[index + 1] = g;
+                    data[index + 2] = b;
+                    return data;
+                }
+                
+                
+                
+                
+
+                function distance(x1, y1, x2, y2)
+                {
+                    return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+                }
+                
+                function randomRange(min, max, getFloat)
+                {
+                    var rand;
+                    if (getFloat == null) {
+                      getFloat = false;
+                    }
+                    rand = min + (Math.random() * (max - min));
+                    if (getFloat) {
+                      return rand.toFixed(getFloat);
+                    } else {
+                      return Math.round(rand);
+                    }
+                }
+                
+                function luminance(r, g, b)
+                {
+                    return (0.299 * r) + (0.587 * g) + (0.114 * b);
+                }
+                
+                function bezier(start, ctrl1, ctrl2, end, lowBound, highBound)
+                {
+                    var Ax, Ay, Bx, By, Cx, Cy, bezier, curveX, curveY, i, j, leftCoord, rightCoord, t, x0, x1, x2, x3, y0, y1, y2, y3, _i, _j, _k, _ref, _ref1;
+                    x0 = start[0];
+                    y0 = start[1];
+                    x1 = ctrl1[0];
+                    y1 = ctrl1[1];
+                    x2 = ctrl2[0];
+                    y2 = ctrl2[1];
+                    x3 = end[0];
+                    y3 = end[1];
+                    bezier = {};
+                    Cx = parseInt(3 * (x1 - x0), 10);
+                    Bx = 3 * (x2 - x1) - Cx;
+                    Ax = x3 - x0 - Cx - Bx;
+                    Cy = 3 * (y1 - y0);
+                    By = 3 * (y2 - y1) - Cy;
+                    Ay = y3 - y0 - Cy - By;
+                    for (i = _i = 0; _i < 1000; i = ++_i) {
+                      t = i / 1000;
+                      curveX = Math.round((Ax * Math.pow(t, 3)) + (Bx * Math.pow(t, 2)) + (Cx * t) + x0);
+                      curveY = Math.round((Ay * Math.pow(t, 3)) + (By * Math.pow(t, 2)) + (Cy * t) + y0);
+                      if (lowBound && curveY < lowBound) {
+                        curveY = lowBound;
+                      } else if (highBound && curveY > highBound) {
+                        curveY = highBound;
+                      }
+                      bezier[curveX] = curveY;
+                    }
+                    if (bezier.length < end[0] + 1) {
+                      for (i = _j = 0, _ref = end[0]; 0 <= _ref ? _j <= _ref : _j >= _ref; i = 0 <= _ref ? ++_j : --_j) {
+                        if (!(bezier[i] != null)) {
+                          leftCoord = [i - 1, bezier[i - 1]];
+                          for (j = _k = i, _ref1 = end[0]; i <= _ref1 ? _k <= _ref1 : _k >= _ref1; j = i <= _ref1 ? ++_k : --_k) {
+                            if (bezier[j] != null) {
+                              rightCoord = [j, bezier[j]];
+                              break;
+                            }
+                          }
+                          bezier[i] = leftCoord[1] + ((rightCoord[1] - leftCoord[1]) / (rightCoord[0] - leftCoord[0])) * (i - leftCoord[0]);
+                        }
+                      }
+                    }
+                    if (!(bezier[end[0]] != null)) {
+                      bezier[end[0]] = bezier[end[0] - 1];
+                    }
+                    return bezier;
+                }
+                
+                function locationXY()
+                {
+                    var x, y;
+                    var loc = 0;
+                    y = canvas.height - Math.floor(loc / (canvas.width * 4));
+                    x = (loc % (canvas.width * 4)) / 4;
+                    return {
+                      x: x,
+                      y: y
+                    };
+                }
+                
+                function vignette(size, strength)
+                {
+                    var _bezier, center, end, start;
+                    if (strength == null) {
+                      strength = 60;
+                    }
+                    if (typeof size == "string" && size.substr(-1) == "%") {
+                      if (canvas.height > canvas.width) {
+                        size = canvaswidth * (parseInt(size.substr(0, size.length - 1), 10) / 100);
+                      } else {
+                        size = canvas.height * (parseInt(size.substr(0, size.length - 1), 10) / 100);
+                      }
+                    }
+                    strength /= 100;
+                    center = [canvas.width / 2, canvas.height / 2];
+                    start = Math.sqrt(Math.pow(center[0], 2) + Math.pow(center[1], 2));
+                    end = start - size;
+                    _bezier = bezier([0, 1], [30, 30], [70, 60], [100, 80]);
+                    
+                    var data = context.getImageData(0, 0, canvas.width, canvas.height);//get pixel data
+                    var pixels = data.data;
+                    for (var i = 0; i < pixels.length; i += 4)
+                    {
+                        var dist, div, loc;
+                        loc = locationXY();
+                        dist = distance(loc.x, loc.y, center[0], center[1]);
+                        if (dist > end) {
+                          div = Math.max(1, (_bezier[Math.round(((dist - end) / size) * 100)] / 10) * strength);
+                          pixels[i] = Math.pow(pixels[i] / 255, div) * 255;
+                          pixels[i + 1] = Math.pow(pixels[i + 1] / 255, div) * 255;
+                          pixels[i + 2] = Math.pow(pixels[i + 2] / 255, div) * 255;
+                        }
+                    }
+                    data.data = pixels;
+                    context.putImageData(data, 0, 0);
+                    
+                }
+                
+                
+                function curves(chans, start, ctrl1, ctrl2, end)
+                {
+                    var _bezier, i, start, _i, _j, _ref, _ref1;
+                    _bezier = bezier(start, ctrl1, ctrl2, end, 0, 255);
+                    if (start[0] > 0) {
+                        for (i = _i = 0, _ref = start[0]; 0 <= _ref ? _i < _ref : _i > _ref; i = 0 <= _ref ? ++_i : --_i) {
+                        _bezier[i] = start[1];
+                        }
+                    }
+                    if (end[0] < 255) {
+                        for (i = _j = _ref1 = end[0]; _ref1 <= 255 ? _j <= 255 : _j >= 255; i = _ref1 <= 255 ? ++_j : --_j) {
+                            _bezier[i] = end[1];
+                        }
+                    }
+                    var data = context.getImageData(0, 0, canvas.width, canvas.height);//get pixel data
+                    var pixels = data.data;
+                    for (var j = 0; j < pixels.length; j += 4)
+                    {
+                        var r = pixels[j];
+                        var g = pixels[j + 1];
+                        var b = pixels[j + 2];
+                        var _k, _ref2;
+                        for (i = _k = 0, _ref2 = chans.length; 0 <= _ref2 ? _k < _ref2 : _k > _ref2; i = 0 <= _ref2 ? ++_k : --_k) {
+                            if(chans.length == 1)
+                            {
+                                if(chans[i] == 'b')
+                                    i = 2;
+                                if(chans[i] == 'g')
+                                    i = 1;
+                                if(chans[i] == 'r')
+                                    i = 0;
+                            }
+                          if(i == 0)
+                              r = _bezier[r];
+                          if(i == 1)
+                              g = _bezier[g];
+                          if(i == 2)
+                              b = _bezier[b];
+                        }
+                        pixels[j] = r;
+                        pixels[j + 1] = g;
+                        pixels[j + 2] = b;
+                    }
+                    data.data = pixels;
+                    context.putImageData(data, 0, 0);
+                    
+                }
+                
+                function exposure(adjust)
+                {
+                    var ctrl1, ctrl2, p;
+                    p = Math.abs(adjust) / 100;
+                    ctrl1 = [0, 255 * p];
+                    ctrl2 = [255 - (255 * p), 255];
+                    if (adjust < 0) {
+                      ctrl1 = ctrl1.reverse();
+                      ctrl2 = ctrl2.reverse();
+                    }
+                    curves('rgb', [0, 0], ctrl1, ctrl2, [255, 255]);
+                }
+                
+                function posterize(adjust)
+                {
+                    var numOfAreas, numOfValues;
+                    numOfAreas = 256 / adjust;
+                    numOfValues = 255 / (adjust - 1);
+                    var data = context.getImageData(0, 0, canvas.width, canvas.height);//get pixel data
+                    var pixels = data.data;
+                    for (var j = 0; j < pixels.length; j += 4)
+                    {
+                        pixels[j] = Math.floor(Math.floor(pixels[j] / numOfAreas) * numOfValues);
+                        pixels[j + 1] = Math.floor(Math.floor(pixels[j + 1] / numOfAreas) * numOfValues);
+                        pixels[j + 2] = Math.floor(Math.floor(pixels[j + 2] / numOfAreas) * numOfValues);
+                    }
+                    data.data = pixels;
+                    context.putImageData(data, 0, 0);
+                }
+                
+                function clip(adjust)
+                {
+                    adjust = Math.abs(adjust) * 2.55;
+                    var data = context.getImageData(0, 0, canvas.width, canvas.height);//get pixel data
+                    var pixels = data.data;
+                    for (var j = 0; j < pixels.length; j += 4)
+                    {
+                        if (pixels[j] > 255 - adjust) {
+                            pixels[j] = 255;
+                        } else if (pixels[j] < adjust) {
+                          pixels[j] = 0;
+                        }
+                        if (pixels[j + 1] > 255 - adjust) {
+                          pixels[j + 1] = 255;
+                        } else if (pixels[j + 1] < adjust) {
+                          pixels[j + 1] = 0;
+                        }
+                        if (pixels[j + 2] > 255 - adjust) {
+                          pixels[j + 2] = 255;
+                        } else if (pixels[j + 2] < adjust) {
+                          pixels[j + 2] = 0;
+                        }
+                    }
+                    data.data = pixels;
+                    context.putImageData(data, 0, 0);
+                }
+                function hexToRGB(hex)
+                {
+                    var b, g, r;
+                    if (hex.charAt(0) == "#") {
+                      hex = hex.substr(1);
+                    }
+                    r = parseInt(hex.substr(0, 2), 16);
+                    g = parseInt(hex.substr(2, 2), 16);
+                    b = parseInt(hex.substr(4, 2), 16);
+                    return {
+                      r: r,
+                      g: g,
+                      b: b
+                    };
+                }
+                
+                function colorize(_rgb, _level, num)
+                {
+                    var level, rgb;
+                    if (num == 2) {
+                      rgb = hexToRGB(_rgb);
+                      level = _level;
+                    }
+                    var data = context.getImageData(0, 0, canvas.width, canvas.height);//get pixel data
+                    var pixels = data.data;               
+                    for (var j = 0; j < pixels.length; j += 4)
+                    {
+                        pixels[j] -= (pixels[j] - rgb.r) * (level / 100);
+                        pixels[j + 1] -= (pixels[j + 1] - rgb.g) * (level / 100);
+                        pixels[j + 2] -= (pixels[j + 2] - rgb.b) * (level / 100);
+                    }
+                    data.data = pixels;
+                    context.putImageData(data, 0, 0);
+                }
+                
+                function vintage()
+                {
+                    greysCale();
+                    contrast(5);
+                    noise(3);
+                    sepia(100);
+                    channels(8, 2, 4);
+                    gamma(0.87);
+                    vignette("40%", 30);
+                }
+                
+                
+                function lomo()
+                {
+                    brightness(15);
+                    exposure(30);
+                    curves('rgb', [0, 0], [200, 0], [155, 255], [255, 255]);
+                    saturation(-20);
+                    gamma(1.8);
+                    vignette("60%", 60);
+                    brightness(5);
+                }
+                
+                
+                function clarity()
+                {
+                  vibrance(20);
+                  curves('rgb', [5, 0], [130, 150], [190, 220], [250, 255]);
+                  sharpe(30);
+                  vignette('45%', 20);
+                }
+                
+                function sinCity()
+                {
+                    contrast(100);
+                    brightness(15);
+                    exposure(10);
+                    posterize(80);
+                    clip(30);
+                    greysCale();
+                }
+                
+                function sunrise()
+                {
+                    exposure(25);
+                    saturation(-5);
+                    vibrance(50);
+                    sepia(60);
+                    colorize("#e87b22", 10, 2);
+                    channels(8, null, 8);
+                    contrast(5);
+                    gamma(1.2);
+                    vignette("55%", 25);
+                }
+                
+                function crossProcess()
+                {
+                    exposure(5);
+                    colorize("#e87b22", 4, 2);
+                    sepia(20);
+                    channels(3, null, 8);
+                    curves('b', [0, 0], [100, 150], [180, 180], [255, 255]);
+                    contrast(15);
+                    vibrance(75);
+                    gamma(1.6);
+                }
+                
+                function orangePeel()
+                {
+                    curves('rgb', [0, 0], [100, 50], [140, 200], [255, 255]);
+                    vibrance(-30);
+                    saturation(-30);
+                    colorize('#ff9000', 30, 2);
+                    contrast(-5);
+                    gamma(1.4);
+                }
+                
+                function love()
+                {
+                    brightness(5);
+                    exposure(8);
+                   contrast(4);
+                    colorize('#c42007', 30, 2);
+                    vibrance(50);
+                    gamma(1.3);
+                }
+                
+                function Grungy()
+                {
+                    gamma(1.5);
+                    clip(25);
+                    saturation(-60);
+                    contrast(5);
+                    noise(5);
+                    vignette("50%", 25);
+                }
+                
+                
+                function jarques()
+                {
+                    sharpe(60);
+                    saturation(-35);
+                    curves('b', [20, 0], [90, 120], [186, 144], [255, 230]);
+                    curves('r', [0, 0], [144, 90], [138, 120], [255, 255]);
+                    curves('g', [10, 0], [115, 105], [148, 100], [255, 248]);
+                    curves('rgb', [0, 0], [120, 100], [128, 140], [255, 255]);
+                }
+                
+                function pinhole()
+                {
+                    greysCale();
+                    sepia(10);
+                    exposure(25);
+                    contrast(15);
+                    vignette('60%', 35, 2);
+                }
+                
+                function oldBoot()
+                {
+                    saturation(-20);
+                    vibrance(-50);
+                    gamma(1.1);
+                    sepia(30);
+                    channels(-10, null, 5)
+                    curves('rgb', [0, 0], [80, 50], [128, 230], [255, 255]);
+                    vignette("60%", 30);
+                }
+                
+
+                function filter()
+                {
+                    var filter_edges = [0, 1, 0, 1, - 4, 1, 0, 1, 0];
+                    var filter_emboss = [-2, -1, 0, -1, 1, 1, 0, 1, 2];
+                    
+                    //sharpe(60);
+                    //channels(3, null, 20);
+                    //vignette("40%", 30);
+                    //vintage();
+                    //sepia(20);
+                    //exposure(15);
+                    //lomo();
+                    //saturation(-20);
+                    //brightness(15);
+                    //gamma(1.6);
+                    //greysCale();
+                    //clip(40);
+                    //clarity();
+                    //sinCity();
+                    //sunrise();
+                    //orangePeel();
+                    //crossProcess();
+                    //love();
+                    //Grungy();
+                    //jarques();
+                    //pinhole();
+                    //oldBoot();
+                    //threshold();
+                    greysCale()
+                    //blur();
+                }
+                
+                
+
+                function saveImage(link)
+                {
+                    link.href = document.getElementById('mycanvas1').toDataURL();
+                    link.download = "filename.png";
+
+                }
+
+                function downloadCanvas(link, canvasId, filename) {
+                    link.href = document.getElementById(canvasId).toDataURL();
+                    link.download = filename;
+                }
+
+                /** 
+                 * The event handler for the link's onclick event. We give THIS as a
+                 * parameter (=the link element), ID of the canvas and a filename.
+                 */
+                document.getElementById('download').addEventListener('click', function () {
+                    downloadCanvas(this, 'mycanvas1', 'test.png');
+                }, false);
+
+        </script>
+    </body>
+</html>
